@@ -1,32 +1,49 @@
 package nextstep.ladder.view;
 
-import nextstep.ladder.Ladder;
-import nextstep.ladder.LineRenderer;
+import nextstep.ladder.domain.Ladder;
+import nextstep.ladder.domain.Participants;
 
 import java.util.function.Consumer;
 
 public class ConsoleResultView implements ResultView {
+    private static final String HEADER_MSG = "실행 결과";
     private static final String LADDER_STICK = "|";
     private static final String EXIST_POINT = "-----";
     private static final String EMPTY_POINT = "     ";
+    private static final String NAME_STRING_FORMAT = "%6s";
 
     @Override
-    public void printLadder(Ladder ladder) {
-        StringBuilder ladderBuilder = new StringBuilder();
-        LineRenderer lineRenderer = LineRenderer.of(renderPoints(ladderBuilder), renderLastPartOfLine(ladderBuilder));
-        ladder.repeatAsHeight(lineRenderer);
+    public void printResult(Participants participants, Ladder ladder) {
+        StringBuilder resultBuilder = new StringBuilder();
 
-        System.out.println(ladderBuilder.toString());
+        appendHeader(resultBuilder);
+        appendParticipantNames(participants, resultBuilder);
+        appendLadder(ladder, resultBuilder);
+
+        System.out.println(resultBuilder.toString());
     }
 
-    private Consumer<Boolean> renderPoints(StringBuilder sb) {
-        return point -> {
-            sb.append(LADDER_STICK);
-            sb.append(point ? EXIST_POINT : EMPTY_POINT);
-        };
+    private void appendHeader(StringBuilder resultBuilder) {
+        resultBuilder.append(HEADER_MSG).append(System.lineSeparator());
     }
 
-    private Runnable renderLastPartOfLine(StringBuilder sb) {
-        return () -> sb.append(LADDER_STICK).append(System.lineSeparator());
+    private void appendParticipantNames(Participants participants, StringBuilder resultBuilder) {
+        participants.namesValueForEach(appendName(resultBuilder));
+        resultBuilder.append(System.lineSeparator());
+    }
+
+    private Consumer<String> appendName(StringBuilder resultBuilder) {
+        return (String name) -> resultBuilder.append(String.format(NAME_STRING_FORMAT, name));
+    }
+
+    private void appendLadder(Ladder ladder, StringBuilder resultBuilder) {
+        LineRenderer lineRenderer = LineRenderer.builder()
+                .firstPartOfLine(() -> resultBuilder.append(EMPTY_POINT).append(LADDER_STICK))
+                .point(point -> resultBuilder.append(point ? EXIST_POINT : EMPTY_POINT))
+                .ladderStick(() -> resultBuilder.append(LADDER_STICK))
+                .lastPartOfLine(() -> resultBuilder.append(System.lineSeparator()))
+                .build();
+
+        ladder.linesForEach(lineRenderer.renderLine());
     }
 }

@@ -1,27 +1,37 @@
 package nextstep.ladder;
 
-import nextstep.ladder.view.ConsoleResultView;
+import nextstep.ladder.domain.Height;
+import nextstep.ladder.domain.Ladder;
+import nextstep.ladder.domain.Participants;
+import nextstep.ladder.util.ValidInputHelper;
+import nextstep.ladder.view.InputView;
+import nextstep.ladder.view.ResultView;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Scanner;
-import java.util.stream.Collectors;
 
 public class LadderGame {
-    public static void main(String[] args) {
-        System.out.println("참여할 사람 이름을 입력하세요. (이름은 쉼표(,)로 구분하세요)");
-        Scanner scanner = new Scanner(System.in);
-        String namesInput = scanner.nextLine();
-        List<String> names = Arrays.stream(namesInput.split(","))
-                .collect(Collectors.toList());
-        Participants participants = Participants.from(names);
+    private final InputView inputView;
+    private final ResultView resultView;
 
-        System.out.println("최대 사다리 높이는 몇 개인가요?");
-        Height height = Height.valueOf(Integer.parseInt(scanner.nextLine()));
+    public LadderGame(InputView inputView, ResultView resultView) {
+        this.inputView = inputView;
+        this.resultView = resultView;
+    }
 
+    public void start() {
+        Participants participants = ValidInputHelper.get(this::getParticipants, inputView::printError);
+        Height height = ValidInputHelper.get(this::getHeight, inputView::printError);
         Ladder ladder = Ladder.of(participants, height);
+        resultView.printResult(participants, ladder);
+    }
 
-        ConsoleResultView consoleResultView = new ConsoleResultView();
-        consoleResultView.printLadder(ladder);
+    private Participants getParticipants() {
+        List<String> inputNames = ValidInputHelper.get(inputView::getParticipantNames, inputView::printError);
+        return Participants.from(inputNames);
+    }
+
+    private Height getHeight() {
+        int inputHeight = ValidInputHelper.get(inputView::getHeight, inputView::printError);
+        return Height.valueOf(inputHeight);
     }
 }
