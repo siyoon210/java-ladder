@@ -4,7 +4,9 @@ import nextstep.ladder.util.pointsgenerator.PointsGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class Ladder {
@@ -34,5 +36,23 @@ public class Ladder {
 
     public void linesForEach(Consumer<Line> consumer) {
         lines.forEach(consumer);
+    }
+
+    public Map<String, String> resultOf(Participants participants, ExecutionsResults executionResults) {
+        return IntStream.range(0, participants.getNumberOfParticipants().getValue())
+                .boxed()
+                .collect(Collectors.toMap(i -> participants.get(i).getValue(), i -> executionResults.get(getResult(i))));
+    }
+
+    private int getResult(int currIndex) {
+        return getResultOfPerLine(currIndex, lines.size() - 1);
+    }
+
+    private int getResultOfPerLine(int currIndex, int lineIndex) {
+        if (lineIndex == 0) {
+            return lines.get(lineIndex).moveIndex(currIndex);
+        }
+
+        return lines.get(lineIndex).moveIndex(getResultOfPerLine(currIndex, lineIndex - 1));
     }
 }

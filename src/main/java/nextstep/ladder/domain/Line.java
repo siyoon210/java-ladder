@@ -52,4 +52,32 @@ public class Line {
     public void pointsForEach(Consumer<Boolean> consumer) {
         points.forEach(consumer);
     }
+
+    public boolean get(int index) {
+        return points.get(index);
+    }
+
+    @Override
+    public String toString() {
+        return "Line{" +
+                "points=" + points +
+                '}';
+    }
+
+    public int moveIndex(int currIndex) {
+        //왼쪽검사
+        if (currIndex > 0) {
+            if (points.get(currIndex - 1)) {
+                return currIndex - 1;
+            }
+        }
+        //오른쪽검사
+        if (currIndex < points.size()) {
+            if (points.get(currIndex)) {
+                return currIndex + 1;
+            }
+        }
+
+        return currIndex;
+    }
 }
