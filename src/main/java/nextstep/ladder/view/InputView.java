@@ -11,5 +11,7 @@ public interface InputView {
 
     String getNameOfWantToCheck();
 
+    String getNameOfWantToCheck();
+
     void printError(RuntimeException e);
 }
