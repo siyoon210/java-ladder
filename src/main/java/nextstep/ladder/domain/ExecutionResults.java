@@ -1,24 +1,42 @@
 package nextstep.ladder.domain;
 
-import java.util.Map;
-import java.util.function.BiConsumer;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Consumer;
 
 public class ExecutionResults {
-    private final Map<Name, ResultCandidate> value;
+    public static final String INVALID_SIZE_ERR_MSG = "실행 결과값은 참가자 수와 같아야 합니다.";
+    private final List<String> value;
 
-    private ExecutionResults(Map<Name, ResultCandidate> value) {
+    private ExecutionResults(List<String> value, Participants participants) {
         this.value = value;
+        validateSize(participants);
     }
 
-    public static ExecutionResults of(Map<Name, ResultCandidate> value) {
-        return new ExecutionResults(value);
+    private void validateSize(Participants participants) {
+        NumberOfParticipants numberOfParticipants = participants.getNumberOfParticipants();
+        if (value.size() != numberOfParticipants.getValue()) {
+            throw new IllegalArgumentException(INVALID_SIZE_ERR_MSG);
+        }
     }
 
-    public void forEach(BiConsumer<Name, ResultCandidate> biConsumer) {
-        value.forEach(biConsumer);
+    public static ExecutionResults of(Participants participants, List<String> executionResultInput) {
+        return new ExecutionResults(executionResultInput, participants);
     }
 
-    public void accept(Name nameOfWantToCheck, BiConsumer<Name, ResultCandidate> biConsumer) {
-        biConsumer.accept(nameOfWantToCheck, value.get(nameOfWantToCheck));
+    public static ExecutionResults of(Participants participants, String... executionResultInput) {
+        return new ExecutionResults(Arrays.asList(executionResultInput), participants);
+    }
+
+    public int size() {
+        return value.size();
+    }
+
+    public String get(int index) {
+        return value.get(index);
+    }
+
+    public void forEach(Consumer<String> consumer) {
+        value.forEach(consumer);
     }
 }
