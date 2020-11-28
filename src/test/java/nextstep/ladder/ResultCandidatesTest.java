@@ -1,7 +1,7 @@
 package nextstep.ladder;
 
-import nextstep.ladder.domain.ExecutionsResults;
 import nextstep.ladder.domain.Participants;
+import nextstep.ladder.domain.ResultCandidates;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -11,19 +11,19 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
-public class ExecutionResultTest {
+public class ResultCandidatesTest {
     @Test
     @DisplayName("실행결과의 size는 입력된 input 실행결과와 size()가 같아야 한다.")
-    void executionResultTest() {
+    void resultsSizeTest() {
         //given
         Participants participants = Participants.of("참가자1", "참가자2", "참가자3", "참가자4");
         List<String> executionResultInput = Arrays.asList("꽝", "5000", "꽝", "3000");
 
         //when
-        ExecutionsResults executionResults = ExecutionsResults.of(participants, executionResultInput);
+        ResultCandidates resultCandidates = ResultCandidates.of(participants.getNumberOfParticipants(), executionResultInput);
 
         //then
-        assertThat(executionResults.size()).isEqualTo(executionResultInput.size());
+        assertThat(resultCandidates.size()).isEqualTo(executionResultInput.size());
     }
 
     @Test
@@ -33,7 +33,7 @@ public class ExecutionResultTest {
         List<String> executionResultInput = Arrays.asList("꽝", "5000", "꽝", "3000");
 
         assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> ExecutionsResults.of(participants, executionResultInput))
-                .withMessage(ExecutionsResults.INVALID_SIZE_ERR_MSG);
+                .isThrownBy(() -> ResultCandidates.of(participants.getNumberOfParticipants(), executionResultInput))
+                .withMessage(ResultCandidates.INVALID_SIZE_ERR_MSG);
     }
 }

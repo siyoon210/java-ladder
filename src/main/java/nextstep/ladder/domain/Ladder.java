@@ -3,6 +3,7 @@ package nextstep.ladder.domain;
 import nextstep.ladder.util.pointsgenerator.PointsGenerator;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -38,23 +39,29 @@ public class Ladder {
         lines.forEach(consumer);
     }
 
-    public Map<String, String> resultOf(Participants participants, ExecutionsResults executionResults) {
-        return IntStream.range(0, participants.getNumberOfParticipants().getValue())
+    public ExecutionResults resultOf(Participants participants, ResultCandidates resultCandidates) {
+        Map<Name, ResultCandidate> resultsMap = IntStream.range(0, participants.getNumberOfParticipants().getValue())
                 .boxed()
-                .collect(Collectors.toMap(i -> participants.get(i).getValue(), i -> executionResults.get(getResult(i))));
+                .collect(Collectors.toMap(participants::get, i -> resultCandidates.get(getResultIndexOf(i)),
+                        (k1, k2) -> {
+                            throw new IllegalStateException(Participants.DUPLICATE_NAME_EXIST_ERR_MSG);
+                        },
+                        LinkedHashMap::new));
+
+        return ExecutionResults.of(resultsMap);
     }
 
-    private int getResult(int currIndex) {
-        return getResult(currIndex, lines.size() - 1);
+    private int getResultIndexOf(int index) {
+        return getResultIndexOf(index, lines.size() - 1);
     }
 
-    private int getResult(int currIndex, int lineIndex) {
+    private int getResultIndexOf(int index, int lineIndex) {
         Line line = lines.get(lineIndex);
         if (lineIndex == 0) {
-            return line.getNextIndexOf(currIndex);
+            return line.getNextIndexOf(index);
         }
 
-        int nextIndex = getResult(currIndex, lineIndex - 1);
+        int nextIndex = getResultIndexOf(index, lineIndex - 1);
         return line.getNextIndexOf(nextIndex);
     }
 }
