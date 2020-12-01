@@ -12,6 +12,7 @@ import java.util.stream.IntStream;
 
 public class Ladder {
     private final List<Line> lines;
+    private List<LadderLine> ladderLines;
 
     private Ladder(Participants participants, Height height) {
         lines = new ArrayList<>(height.getValue());
@@ -27,6 +28,11 @@ public class Ladder {
                 .forEach(index -> lines.add(Line.of(participants, pointsGenerator)));
     }
 
+    private Ladder(List<LadderLine> ladderLines) {
+        lines = new ArrayList<>();
+        this.ladderLines = ladderLines;
+    }
+
     public static Ladder of(Participants participants, Height height) {
         return new Ladder(participants, height);
     }
@@ -35,12 +41,24 @@ public class Ladder {
         return new Ladder(participants, height, pointsGenerator);
     }
 
+    public static Ladder of2(Participants participants, Height height) {
+        List<LadderLine> ladderLines = new ArrayList<>();
+        int sizeOfPerson = participants.getSizeOfPerson().getValue();
+        IntStream.range(0, height.getValue())
+                .forEach(index -> ladderLines.add(LadderLine.init(sizeOfPerson)));
+        return new Ladder(ladderLines);
+    }
+
+    public static Ladder of2(Participants participants, Height height, PointsGenerator pointsGenerator) {
+        return new Ladder(participants, height, pointsGenerator);
+    }
+
     public void linesForEach(Consumer<Line> consumer) {
         lines.forEach(consumer);
     }
 
     public ExecutionResults resultOf(Participants participants, ResultCandidates resultCandidates) {
-        Map<Name, ResultCandidate> resultsMap = IntStream.range(0, participants.getNumberOfParticipants().getValue())
+        Map<Name, ResultCandidate> resultsMap = IntStream.range(0, participants.getSizeOfPerson().getValue())
                 .boxed()
                 .collect(Collectors.toMap(participants::get, i -> resultCandidates.get(getResultIndexOf(i)),
                         (k1, k2) -> {
@@ -63,5 +81,25 @@ public class Ladder {
 
         int nextIndex = getResultIndexOf(index, lineIndex - 1);
         return line.getNextIndexOf(nextIndex);
+    }
+
+    public ExecutionResults resultOf2(Participants participants, ResultCandidates resultCandidates) {
+        Map<Name, ResultCandidate> resultsMap = IntStream.range(0, participants.getSizeOfPerson().getValue())
+                .boxed()
+                .collect(Collectors.toMap(participants::get, i -> resultCandidates.get(getResultIndexOf2(i)),
+                        (k1, k2) -> {
+                            throw new IllegalStateException(Participants.DUPLICATE_NAME_EXIST_ERR_MSG);
+                        },
+                        LinkedHashMap::new));
+
+        return ExecutionResults.of(resultsMap);
+    }
+
+    private int getResultIndexOf2(Integer position) {
+        for (LadderLine ladderLine : ladderLines) {
+            position = ladderLine.move(position);
+        }
+
+        return position;
     }
 }
